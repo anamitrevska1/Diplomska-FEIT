@@ -42,7 +42,7 @@
                             <td class="px-4 py-3">{{$invoice->total_amount}}</td>
                             <td class="px-4 py-3">{{$invoice->payment_due_date}}</td>
                             <td class="px-4 py-3">
-                                @if ($invoice->isPayed === 1)
+                                @if ($invoice->isPaid === 1)
                                     Yes
                                 @else
                                     No
