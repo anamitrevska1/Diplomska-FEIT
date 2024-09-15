@@ -80,14 +80,17 @@ class CustomerController extends Controller
         $serviceCustomer = DB::table('customer_services')
             ->join('services', 'services.id', '=', 'customer_services.service_id')
             ->where('customer_services.customer_id',$customer->id)
+            ->whereNull('customer_services.deleted_at')
             ->select('customer_services.*','services.name as service_name','services.type as service_type','services.service_charge as service_charge')
             ->paginate(10);
         $serviceList = DB::table('services')
             ->where('created_by',$created_by)
+            ->whereNull('deleted_at')
             ->orderBy('name')
             ->get();
         $discountList = DB::table('discounts')
             ->where('created_by',$created_by)
+            ->whereNull('deleted_at')
             ->orderBy('name')
             ->get();
 
@@ -96,6 +99,7 @@ class CustomerController extends Controller
             ->leftJoin('customer_services', 'customer_discounts.service_id', '=', 'customer_services.id')
             ->leftJoin('services', 'services.id', '=', 'customer_services.service_id')
             ->where('customer_discounts.customer_id',$customer->id)
+            ->whereNull('customer_discounts.deleted_at')
             ->select('customer_discounts.*','services.name as discount_on_service_name','discounts.name as discount_name','discounts.discount_amount as discount_amount','discounts.discount_percentage as discount_percentage')
             ->paginate(10);
 
@@ -229,24 +233,32 @@ public function deactivateService($id)
 {
     $todayDate = Carbon::now()->format('Y-m-d');
     $customerService=customer_service::findOrFail($id);
-    if ($todayDate<$customerService->active_Date){
-        $customerService->end_Date=$customerService->active_Date;
+    $serviceType=service::findOrfail($customerService->service_id)->type;
+    $prev_cutoff_date=customer::findOrfail($customerService->customer_id)->prev_cutoff_date;
+    if($serviceType=='RC'){
+        if ($todayDate<$customerService->active_Date && $todayDate<$customerService->end_date ){
+            $customerService->end_date=$customerService->active_Date;
+            $customerService->save();
+            DB::table('service_charge_maps')
+                ->updateOrInsert(
+                    ['customer_service_map_id' => $id],
+                    ['end_date' => $customerService->end_date]
+                );
+        }
+        else if ($todayDate>$customerService->active_Date && $todayDate<$customerService->end_date){
+        $customerService->end_date=$todayDate;
         $customerService->save();
-        DB::table('service_charge_maps')
-            ->updateOrInsert(
-                ['customer_service_map_id' => $id],
-                ['end_date' => $customerService->end_Date]
-            );
+            DB::table('service_charge_maps')
+                ->updateOrInsert(
+                    ['customer_service_map_id' => $id],
+                    ['end_date' => $customerService->end_date]
+                );
+        }
     }
-    else{
-    $customerService->end_Date=$todayDate;
-    $customerService->save();
-        DB::table('service_charge_maps')
-            ->updateOrInsert(
-                ['customer_service_map_id' => $id],
-                ['end_date' => $customerService->end_Date]
-            );
+    else if($serviceType=='NRC' && $customerService->end_date>$prev_cutoff_date){
+        $customerService->delete();
     }
+
     return redirect('/customer/'.$customerService->customer_id);
 }
 
@@ -280,26 +292,9 @@ public function deactivateService($id)
     public function deactivateDiscount($id)
     {
 
-        $todayDate = Carbon::now()->format('Y-m-d');
-        $customerDiscount=customer_discount::findOrFail($id);
-        if ($todayDate<$customerDiscount->active_Date){
-            $customerDiscount->end_Date=$customerDiscount->active_Date;
-            $customerDiscount->save();
-            DB::table('customer_discounts')
-                ->updateOrInsert(
-                    ['id' => $id],
-                    ['end_date' => $customerDiscount->end_Date]
-                );
-        }
-        else{
-            $customerDiscount->end_Date=$todayDate;
-            $customerDiscount->save();
-            DB::table('customer_discounts')
-                ->updateOrInsert(
-                    ['id' => $id],
-                    ['end_date' => $customerDiscount->end_Date]
-                );
-        }
+        $customerDiscount=customer_discount::findorfail($id);
+        $customerDiscount->delete();
+
         return redirect('/customer/'.$customerDiscount->customer_id);
     }
 
@@ -347,6 +342,7 @@ public function deactivateService($id)
         $servicesCustomer = DB::table('customer_services')
             ->join('services', 'services.id', '=', 'customer_services.service_id')
             ->where('customer_services.customer_id',$customerId)
+            ->whereNull('customer_services.deleted_at')
             ->select('customer_services.*','services.name as service_name','services.type as service_type','services.service_charge as service_charge')
             ->get();
 
@@ -355,6 +351,7 @@ public function deactivateService($id)
             ->leftjoin('customer_services', 'customer_discounts.service_id', '=', 'customer_services.id')
             ->leftjoin('services', 'services.id', '=', 'customer_services.service_id')
             ->where('customer_discounts.customer_id',$customerId)
+            ->whereNull('customer_discounts.deleted_at')
             ->select('customer_discounts.*','services.name as discount_on_service_name','discounts.name as discount_name','discounts.discount_amount as discount_amount','discounts.discount_percentage as discount_percentage')
             ->get();
        // dd($discountCustomerList);
@@ -565,6 +562,7 @@ public function deactivateService($id)
         $servicesCustomer = DB::table('customer_services')
             ->join('services', 'services.id', '=', 'customer_services.service_id')
             ->where('customer_services.customer_id',$customerId)
+            ->whereNull('customer_services.deleted_at')
             ->select('customer_services.*','services.name as service_name','services.type as service_type','services.service_charge as service_charge')
             ->get();
         $discountCustomerList = DB::table('customer_discounts')
@@ -572,6 +570,7 @@ public function deactivateService($id)
             ->leftjoin('customer_services', 'customer_discounts.service_id', '=', 'customer_services.id')
             ->leftjoin('services', 'services.id', '=', 'customer_services.service_id')
             ->where('customer_discounts.customer_id',$customerId)
+            ->whereNull('customer_discounts.deleted_at')
             ->select('customer_discounts.*','services.name as discount_on_service_name','discounts.name as discount_name','discounts.discount_amount as discount_amount','discounts.discount_percentage as discount_percentage')
             ->get();
 
@@ -776,6 +775,7 @@ public function deactivateService($id)
         $servicesCustomer = DB::table('customer_services')
             ->join('services', 'services.id', '=', 'customer_services.service_id')
             ->where('customer_services.customer_id',$customerId)
+            ->whereNull('customer_services.deleted_at')
             ->select('customer_services.*','services.name as service_name','services.type as service_type','services.service_charge as service_charge')
             ->get();
         $discountCustomerList = DB::table('customer_discounts')
@@ -783,6 +783,7 @@ public function deactivateService($id)
             ->leftjoin('customer_services', 'customer_discounts.service_id', '=', 'customer_services.id')
             ->leftjoin('services', 'services.id', '=', 'customer_services.service_id')
             ->where('customer_discounts.customer_id',$customerId)
+            ->whereNull('customer_discounts.deleted_at')
             ->select('customer_discounts.*','services.name as discount_on_service_name','discounts.name as discount_name','discounts.discount_amount as discount_amount','discounts.discount_percentage as discount_percentage')
             ->get();
 

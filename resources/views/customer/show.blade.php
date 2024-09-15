@@ -30,7 +30,7 @@
                 <a href="#" class="cursor-pointer px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-tr-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white">
                     Delete Customer
                 </a>
-                <a href="/customer/mainBill/{{$customer->id}}" class="cursor-pointer px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-tr-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white">
+                <a href="" onclick='billCustomer(event)' class="cursor-pointer px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-tr-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white">
                    Bill Customer
                 </a>
 
@@ -86,10 +86,40 @@
                         <dd class="text-lg font-semibold">{{$openBillAmount['total_price']}} MKD</dd>
                     </div>
                 </dl>
+            </div>
         </div>
+    </div>
+
+    @include('customer.edit')
+    @include('customer.serviceList')
+    @include('customer.discountList')
+    @include('invoice.list')
+
+    <button id="bill-customer-popup-trigger" data-modal-target="bill-customer-popup" data-modal-toggle="bill-customer-popup" class="hidden text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">
+        Toggle modal
+    </button>
+    <div id="bill-customer-popup" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-w-md max-h-full">
+            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <div class="p-4 md:p-5 text-center">
+                    <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                    <h3 id="bill-customer-popup-text" class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400"></h3>
+                    <button data-modal-hide="bill-customer-popup" type="button" class="text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                        Close
+                    </button>
+                </div>
+            </div>
         </div>
-        @include('customer.edit')
-        @include('customer.serviceList')
-        @include('customer.discountList')
-        @include('invoice.list')
+    </div>
+    <script>
+        function billCustomer(e) {
+            e.preventDefault();
+            fetch("/customer/mainBill/{{$customer->id}}").then(res => res.json()).then(data => {
+                document.getElementById("bill-customer-popup-text").innerText = data.message;
+                document.getElementById("bill-customer-popup-trigger").click();
+            })
+        }
+    </script>
 </x-app-layout>
