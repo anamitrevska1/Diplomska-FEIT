@@ -1,66 +1,150 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel 11 Invoicing Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is a custom-built invoicing application built using **Laravel 11** and **PHP 8.2**. The application manages customers, services, and generates invoices in a manner similar to telecom billing systems. It supports both recurring and one-time charges, along with custom invoicing features such as QR code payment links, email reminders, and PDF invoice generation. This application is developed as part of the graduation thesis for the **Faculty of Electrical Engineering and Information Technologies**.
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
+- **User Profiles**: Manage users who can create and maintain customer profiles.
+- **Customer Management**: Create, update, and delete customer records.
+- **Service Management**: Configure services (Recurring or One-time charges) at the user or customer level.
+- **Invoice Generation**: Generate monthly invoices for all customers or for specific customers. Option for ad-hoc invoice generation.
+- **Email Reminders**: Automatic email reminders for unpaid invoices.
+- **PDF Invoice Generation**: Each invoice includes a downloadable PDF with a QR code for payments.
+- **Invoicing Portal**: Users can access all previous invoices at the customer level.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Requirements
 
-## Learning Laravel
+To run this project locally, you will need to have the following installed:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **PHP**: Version 8.2 or higher
+- **Composer**: Dependency manager for PHP
+- **MySQL**: Version 8.0 or higher (for the database)
+- **Node.js**: Version 16 or higher (for frontend assets)
+- **NPM**: Comes with Node.js for installing JavaScript dependencies
+- **Laravel 11**: Installed via Composer
+- **Git**: Version control system (optional, but recommended)
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Installation and Setup
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Step 1: Clone the Repository
 
-## Laravel Sponsors
+```bash
+git clone  https://github.com/anamitrevska1/Diplomska-FEIT.git
+cd Diplomska-FEIT
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Step 2: Install PHP Dependencies
 
-### Premium Partners
+Make sure you have **Composer** installed on your system. Install the project dependencies by running:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```bash
+composer install
+```
 
-## Contributing
+### Step 3: Install JavaScript Dependencies
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Make sure you have **Node.js** and **NPM** installed. Then, install the frontend dependencies:
 
-## Code of Conduct
+```bash
+npm install
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Step 4: Configure Environment Variables
 
-## Security Vulnerabilities
+Copy the `.env.example` file to `.env` and modify the environment variables, particularly the database connection information.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+cp .env.example .env
+```
 
-## License
+Update your `.env` file with the following values:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```
+APP_NAME=Laravel Invoicing
+APP_URL=http://localhost
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_database_name
+DB_USERNAME=your_db_username
+DB_PASSWORD=your_db_password
+```
+
+### Step 5: Generate Application Key
+
+Generate the application key required by Laravel:
+
+```bash
+php artisan key:generate
+```
+
+### Step 6: Set Up the Database
+
+Run the following command to migrate the database schema and set up initial data:
+
+```bash
+php artisan migrate
+```
+
+If you have seeders to populate default data:
+
+```bash
+php artisan db:seed
+```
+
+### Step 7: Compile Frontend Assets
+
+Compile the frontend assets using Laravel Mix (Tailwind CSS is used for styling):
+
+```bash
+npm run dev
+```
+
+For production builds:
+
+```bash
+npm run build
+```
+
+### Step 8: Run the Development Server
+
+To start the local development server, run:
+
+```bash
+php artisan serve
+```
+
+You should now be able to access the application at `http://localhost:8000`.
+
+---
+
+## Testing
+
+To run tests for the project, use Laravel's PHPUnit integration:
+
+```bash
+php artisan test
+```
+
+Make sure to configure your `.env.testing` file for the test database setup.
+
+---
+
+## Additional Setup
+
+### Cron Jobs for Reminders and Scheduled Invoicing
+
+Set up a cron job on your server to execute Laravel's task scheduler every minute:
+
+```bash
+* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+This will handle sending invoice reminders and any other scheduled tasks.
+
+---
+
+By following this guide, you will be able to set up and run the Laravel 11 Invoicing Application on your local machine.
