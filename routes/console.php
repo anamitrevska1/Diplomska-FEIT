@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\BillRunJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use App\Jobs\SendPaymentReminderEmails;
@@ -12,6 +13,7 @@ Artisan::command('inspire', function () {
 
 
 Schedule::job(new SendPaymentReminderEmails)->twiceMonthly(5, 26, '13:00');
+Schedule::job(new BillRunJob)->monthly();
 
 
 //Schedule::job(new SendPaymentReminderEmails)->everyMinute();
