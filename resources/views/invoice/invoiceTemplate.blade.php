@@ -176,7 +176,7 @@
             <tr class="item">
                 <td>{{ $detail -> discount_name}}</td>
                 @if(isset($detail ->discount_amount))
-                <td>{{$detail ->discount_on_service_name}} MKD</td>
+                <td>{{$detail ->discount_on_service_name}}</td>
                 @else
                     <td></td>
                 @endif

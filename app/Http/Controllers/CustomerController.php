@@ -164,9 +164,27 @@ class CustomerController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Customer $customer)
+    public function delete($customerId)
     {
-        //
+        $customer = Customer::findOrFail($customerId);
+        $invoices = DB::table('invoices')
+            ->where('customer_id', $customer->id)
+            ->where('isPaid', '0', 0)
+            ->count();
+        $services = DB::table('customer_services')
+            ->where('customer_id', $customer->id)
+            ->whereNull('deleted_at')
+            ->where('end_date', '>', carbon::now())
+            ->count();
+        if ($invoices>0 || $services>0) {
+        return [
+            'message' => 'Customer can not be deleted.',
+        ];
+        }
+        else{
+            $customer->delete();
+            return redirect('/dashboard');
+        }
     }
 
     public function suppress($id)
@@ -391,8 +409,15 @@ public function deactivateService($id)
        //     dd($billingStart,$billingEnd,$daysInMonth,$activeDaysInMonth);
 
             // Pro-rate the monthly price based on the active days
-            $pricePerMonth = $service->service_charge;
-            $proratedPrice = ($activeDaysInMonth / $daysInMonth) * $pricePerMonth;
+
+            if($activeDaysInMonth>=30){
+                $pricePerMonth = $service->service_charge;
+                $proratedPrice = $pricePerMonth;
+            }
+            else {
+                $pricePerMonth = $service->service_charge;
+                $proratedPrice = ($activeDaysInMonth / $daysInMonth) * $pricePerMonth;
+            }
 
             // Calculate the  discount
             $serviceDiscount = 0;
@@ -440,12 +465,10 @@ public function deactivateService($id)
             //If below 0 , set it to 0
 
             $totalServicePrice = max($totalServicePrice, 0);
-            // Add to the total price
             $totalPrice += $totalServicePrice;
 
-            // Append detailed service price info
             $serviceDetails[] = [
-                'user_id' => Auth::user()->id,
+                'user_id' => Auth::user()->id ?? $customer->created_by,
                 'service_id' => $service->id,
                 'customer_id' => $customerId,
                 'service_name' => $service->service_name,
@@ -489,7 +512,7 @@ public function deactivateService($id)
         $invoice = Invoices::create([
             'customer_id' => $customerId,
             'type' => 1,
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::user()->id ?? $customer->created_by,
             'from_date' => $billingStartDate,
             'to_date' => $billingEndDate,
             'payment_due_date' => $payment_due_date,
@@ -580,7 +603,13 @@ public function deactivateService($id)
 
         $billingStartDate = $prevCutoffDate->copy()->startOfMonth();
         $billingEndDate = $prevCutoffDate->copy()->endOfMonth();
-        $payment_due_date = $prevCutoffDate->copy()->endOfMonth();
+
+
+        if ($billingDate->day > 14) {
+            $payment_due_date = $billingDate->copy()->addMonth()->endOfMonth();
+        } else {
+            $payment_due_date = $billingDate->copy()->endOfMonth();
+        }
 
 
         foreach ($servicesCustomer as $service) {
@@ -603,12 +632,16 @@ public function deactivateService($id)
             // Calculate the number of days the service was active in the billing month
             $daysInMonth = $prevCutoffDate->daysInMonth;
             $activeDaysInMonth = $billingStart->diffInDays($billingEnd) + 1;
-
-            //     dd($billingStart,$billingEnd,$daysInMonth,$activeDaysInMonth);
-
             // Pro-rate the monthly price based on the active days
-            $pricePerMonth = $service->service_charge;
-            $proratedPrice = ($activeDaysInMonth / $daysInMonth) * $pricePerMonth;
+            if($activeDaysInMonth>=30){
+                $pricePerMonth = $service->service_charge;
+                $proratedPrice = $pricePerMonth;
+            }
+                else {
+                    $pricePerMonth = $service->service_charge;
+                    $proratedPrice = ($activeDaysInMonth / $daysInMonth) * $pricePerMonth;
+                }
+
 
             // dd($pricePerMonth, $proratedPrice);
 

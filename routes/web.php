@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('verified')->name('dashboard');
 
     Route::resource('customer', CustomerController::class);
+    Route::get('/customer/delete/{id}', [CustomerController::class, 'delete'])->name('customer.delete');
     Route::put('/customer/suppress/{id}', 'CustomerController@suppress');
     Route::put('/customer/suppress/{id}', [CustomerController::class, 'suppress'])->name('customer.suppress');
     Route::post('/customer/customerServiceAdd', [CustomerController::class, 'customerServiceAdd'])->name('customer.customerServiceAdd');

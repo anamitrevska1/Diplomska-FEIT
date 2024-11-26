@@ -17,14 +17,19 @@ class InvoiceMail extends Mailable
     protected $customer;
     protected $filePath;
 
+    protected $type;
+
+    protected $invoice;
+
     /**
      * Create a new message instance.
      */
-    public function __construct($customer, $filePath, $type)
+    public function __construct($customer, $filePath, $type, $invoice = null)
     {
         $this->customer = $customer;
         $this->filePath = $filePath;
         $this->type = $type;
+        $this->invoice = $invoice;
     }
 
     public function build()
@@ -36,7 +41,7 @@ class InvoiceMail extends Mailable
             ->attachFromStorage($this->filePath, 'invoice.pdf', [
                 'mime' => 'application/pdf',
             ])
-            ->with(['customer' => $this->customer]);
+            ->with(['customer' => $this->customer, 'invoice' => $this->invoice]);
 
         }
         else if($this->type == "resendInvoice"){
@@ -45,7 +50,7 @@ class InvoiceMail extends Mailable
                 ->attachFromStorage($this->filePath, 'invoice.pdf', [
                     'mime' => 'application/pdf',
                 ])
-                ->with(['customer' => $this->customer]);
+                ->with(['customer' => $this->customer, 'invoice' => $this->invoice]);
         }
         else if($this->type == "sendReminder"){
             return $this->view('invoice.ReminderEmail')
@@ -53,7 +58,7 @@ class InvoiceMail extends Mailable
                 ->attachFromStorage($this->filePath, 'invoice.pdf', [
                     'mime' => 'application/pdf',
                 ])
-                ->with(['customer' => $this->customer]);
+                ->with(['customer' => $this->customer, 'invoice' => $this->invoice]);
         }
     }
 

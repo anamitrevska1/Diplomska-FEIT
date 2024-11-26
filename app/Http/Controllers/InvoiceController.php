@@ -147,7 +147,7 @@ class InvoiceController extends Controller
         $customer = Customer::findOrFail($invoice->customer_id);
        // dd($invoice,$customer,$fullPath,$filePath);
         // Send the email with the PDF attachment
-        Mail::to($customer->email)->send(new InvoiceMail($customer, $filePath,'newInvoice'));
+        Mail::to($customer->email)->send(new InvoiceMail($customer, $filePath,'newInvoice', $invoice));
 
         return 'Invoice email sent successfully!';
     }
@@ -164,7 +164,7 @@ class InvoiceController extends Controller
         $customer = Customer::findOrFail($invoice->customer_id);
         // dd($invoice,$customer,$fullPath,$filePath);
         // Send the email with the PDF attachment
-        Mail::to($customer->email)->send(new InvoiceMail($customer, $filePath,'resendInvoice'));
+        Mail::to($customer->email)->send(new InvoiceMail($customer, $filePath,'resendInvoice', $invoice));
         return 'Invoice email sent successfully!';
     }
 
@@ -176,15 +176,14 @@ class InvoiceController extends Controller
             ->get();
 
         foreach ($invoices as $invoice) {
-        // Get the file path
-        $filePath = 'invoices/'.$invoice->invoice_Id . '.pdf';
-        // Fetch the customer details
-        $customer = Customer::findOrFail($invoice->customer_id)->first();
-        // dd($invoice,$customer,$fullPath,$filePath);
-        // Send the email with the PDF attachment
-        Mail::to($customer->email)->send(new InvoiceMail($customer, $filePath,'sendReminder'));
-        return 'Invoice email sent successfully!';
-
+            // Get the file path
+            $filePath = 'invoices/'.$invoice->invoice_Id . '.pdf';
+            // Fetch the customer details
+            $customer = Customer::findOrFail($invoice->customer_id)->first();
+            // dd($invoice,$customer,$fullPath,$filePath);
+            // Send the email with the PDF attachment
+            Mail::to($customer->email)->send(new InvoiceMail($customer, $filePath,'sendReminder', $invoice));
+            return 'Invoice email sent successfully!';
         }
     }
 
